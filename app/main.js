@@ -39,11 +39,13 @@ const server = net.createServer((socket) => {
 
       fs.readFile(filepath, (err, fileData) => {
         if (err) {
+          console.error("Error reading file:", err);
           socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
           socket.end();
           return;
         }
 
+        console.log("Sending file contents:", fileData.length, "bytes");
         const response = `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${fileData.length}\r\n\r\n`;
         socket.write(response);
         socket.write(fileData);
