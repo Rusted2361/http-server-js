@@ -1,5 +1,8 @@
 const net = require("net");
 
+const fs = require("fs");
+const pathUtil = require("path");
+
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
 
@@ -34,25 +37,24 @@ const server = net.createServer((socket) => {
       const response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${userAgent.length}\r\n\r\n${userAgent}`;
       socket.write(response);
     }else if(path.startsWith('/files/')){
-      const filename = path.substring(7);
-      console.log("filename",filename);
-      const filepath = path.resolve(__dirname, filename);
-      console.log("filepath",filepath);
-
-      fs.readFile(filepath, (err, fileData) => {
-        if (err) {
-          console.error("Error reading file:", err);
-          socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
-          socket.end();
-          return;
-        }
-
-        console.log("Sending file contents:", fileData.length, "bytes");
-        const response = `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${fileData.length}\r\n\r\n`;
-        socket.write(response);
-        socket.write(fileData);
-        socket.end();
-      });
+      const fileName = path.replace("/files/", "");
+      console.log(process.argv);
+      const directory = process.argv[3] ?? __dirname;
+      console.log("directory",directory);
+      const filePath = pathUtil.join(directory, fileName);
+      console.log("filePath",filePath);
+      if (!fs.existsSync(filePath)) {
+        console.log(404);
+        socket.write("HTTP/1.1  404 Not Found\r\n\r\n", console.error);
+      } else {
+        const data = fs.readFileSync(filePath, "utf8");
+        console.log("content: ", data);
+        socket.write("HTTP/1.1  200 OK\r\n");
+        socket.write("Content-Type: application/octet-stream\r\n");
+        socket.write(`Content-Length: ${data.length}\r\n\r\n`);
+        socket.write(data);
+1
+      }
     }else{
       const response = "HTTP/1.1 404 Not Found\r\n\r\n";
       socket.write(response);
