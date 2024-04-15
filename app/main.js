@@ -33,6 +33,22 @@ const server = net.createServer((socket) => {
 
       const response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${userAgent.length}\r\n\r\n${userAgent}`;
       socket.write(response);
+    }else if(path.startsWith('/files/')){
+      const filename = path.substring(7);
+      const filepath = path.join(__dirname, filename);
+
+      fs.readFile(filepath, (err, fileData) => {
+        if (err) {
+          socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
+          socket.end();
+          return;
+        }
+
+        const response = `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${fileData.length}\r\n\r\n`;
+        socket.write(response);
+        socket.write(fileData);
+        socket.end();
+      });
     }else{
       const response = "HTTP/1.1 404 Not Found\r\n\r\n";
       socket.write(response);
