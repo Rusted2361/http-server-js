@@ -16,7 +16,12 @@ const server = net.createServer((socket) => {
     if (path == '/'){
       const response = "HTTP/1.1 200 OK\r\n\r\n";
       socket.write(response);
-    }else{
+    }else if(path.startsWith('/echo/')){
+      const str = path.slice(6);
+      const response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${str.length}\r\n\r\n${str}`;
+      socket.write(response);
+    }
+    else{
       const response = "HTTP/1.1 404 Not Found\r\n\r\n";
       socket.write(response);
     }
