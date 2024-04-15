@@ -60,7 +60,7 @@ const server = net.createServer((socket) => {
       let content = requestLines[requestLines.length - 1];
       const fileName = path.replace("/files/", "");
       const directory = process.argv[3] ?? __dirname;
-      const filePath = pathModule.join(directory, fileName);
+      const filePath = pathUtil.join(directory, fileName);
       fs.writeFileSync(filePath, content);
       socket.write("HTTP/1.1  201 OK\r\n");
       socket.write("Content-Type: application/octet-stream\r\n");
