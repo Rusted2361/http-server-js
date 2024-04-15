@@ -38,7 +38,7 @@ const server = net.createServer((socket) => {
       socket.write(response);
     }
     socket.end();
-    //server.close();
+ 
   });
 });
 
