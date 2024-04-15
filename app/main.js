@@ -36,59 +36,36 @@ const server = net.createServer((socket) => {
 
       const response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${userAgent.length}\r\n\r\n${userAgent}`;
       socket.write(response);
-    }else if(path.startsWith('/files/')){
+    }else if(method == 'GET' && path.startsWith('/files/')){
       //const filePath = path.join(filesDir, reqPath.replace(/^\/files\//, ""));
       const fileName = path.replace("/files/", "");
       console.log(process.argv);
       const directory = process.argv[3] ?? __dirname;
       console.log("directory",directory);
       const filePath = pathUtil.join(directory, fileName);
-//       console.log("filePath",filePath);
-//       if (!fs.existsSync(filePath)) {
-//         console.log(404);
-//         socket.write("HTTP/1.1  404 Not Found\r\n\r\n", console.error);
-//       } else {
-//         const data = fs.readFileSync(filePath, "utf8");
-//         console.log("content: ", data);
-//         socket.write("HTTP/1.1  200 OK\r\n");
-//         socket.write("Content-Type: application/octet-stream\r\n");
-//         socket.write(`Content-Length: ${data.length}\r\n\r\n`);
-//         socket.write(data);
-// 1
-//       }
-      if (method === "GET") {
-        fs.readFile(filePath)
-            .then((content) => {
-                socket.write(`HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${content.length}\r\n\r\n`);
-                socket.write(content);
-                socket.end();
-            })
-            .catch((err) => {
-                socket.write("HTTP/1.1 404 Not found\r\n\r\n");
-                socket.end();
-            });
-      } else if (method === "POST") {
-        // TODO: properly parse request contents
-        let contentStarted = false;
-        const content = [];
-        for (const line of lines) {
-            if (contentStarted) {
-                content.push(line);
-            } else if (line === "") {
-                contentStarted = true
-            }
-        }
-        fs.writeFile(filePath, content.join("\r\n"))
-            .then(() => {
-                socket.write(`HTTP/1.1 201 Created\r\n\r\n`);
-                socket.end();
-            })
-            .catch((err) => {
-                socket.write("HTTP/1.1 500 Internal server error\r\n\r\n");
-                socket.end();
-            });
+      console.log("filePath",filePath);
+      if (!fs.existsSync(filePath)) {
+        console.log(404);
+        socket.write("HTTP/1.1  404 Not Found\r\n\r\n", console.error);
+      } else {
+        const data = fs.readFileSync(filePath, "utf8");
+        console.log("content: ", data);
+        socket.write("HTTP/1.1  200 OK\r\n");
+        socket.write("Content-Type: application/octet-stream\r\n");
+        socket.write(`Content-Length: ${data.length}\r\n\r\n`);
+        socket.write(data);
       }
 
+    }else if (method === "POST" && path.startsWith("/files")) {
+      let content = request[request.length - 1];
+      const fileName = path.replace("/files/", "");
+      const directory = process.argv[3] ?? __dirname;
+      const filePath = pathModule.join(directory, fileName);
+      fs.writeFileSync(filePath, content);
+      socket.write("HTTP/1.1  201 OK\r\n");
+      socket.write("Content-Type: application/octet-stream\r\n");
+1
+      socket.write(`Content-Length: ${content.length}\r\n\r\n`);
     }else{
       const response = "HTTP/1.1 404 Not Found\r\n\r\n";
       socket.write(response);
