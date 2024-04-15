@@ -36,7 +36,7 @@ const server = net.createServer((socket) => {
     }else if(path.startsWith('/files/')){
       const filename = path.substring(7);
       console.log("filename",filename);
-      const filepath = path.join(__dirname, filename);
+      const filepath = path.resolve(__dirname, filename);
       console.log("filepath",filepath);
 
       fs.readFile(filepath, (err, fileData) => {
